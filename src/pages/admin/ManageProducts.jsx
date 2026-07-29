@@ -10,19 +10,14 @@ function ManageProducts() {
   const [loading, setLoading] = useState(true)
   const [loi, setLoi] = useState('')
   const [thongBao, setThongBao] = useState('')
-
-  // State Phân trang
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 18
-
-  // Modals state
   const [isAttributeModalOpen, setIsAttributeModalOpen] = useState(false)
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false)
   const [isReturnsModalOpen, setIsReturnsModalOpen] = useState(false)
 
   const navigate = useNavigate()
 
-  // Hàm xử lý hiển thị ảnh giống Home.jsx
   const getImageUrl = (path) => {
     if (!path) return ''
     if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -76,14 +71,12 @@ function ManageProducts() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header Toolbar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-800"> Bảng Quản Trị Hệ Thống</h2>
           <p className="text-sm text-gray-500 mt-1">Quản lý sản phẩm, thuộc tính, đơn hàng và các yêu cầu bảo hành</p>
         </div>
         
-        {/* Nút chức năng nằm ngang cạnh nút Thuộc tính */}
         <div className="flex flex-wrap gap-2.5">
           <button
             onClick={() => setIsOrdersModalOpen(true)}
@@ -118,7 +111,6 @@ function ManageProducts() {
       {loi && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{loi}</div>}
       {thongBao && <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4 text-sm">{thongBao}</div>}
 
-      {/* Product Table */}
       {loading ? (
         <div className="text-center py-10 text-gray-500">Đang tải dữ liệu sản phẩm...</div>
       ) : (

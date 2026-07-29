@@ -71,7 +71,6 @@ function ManageReturnsModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Modal Header */}
         <div className="p-5 border-b flex justify-between items-center bg-gray-50">
           <div>
             <h3 className="text-xl font-bold text-gray-800"> Quản lý Đổi trả & Bảo hành</h3>
@@ -84,7 +83,6 @@ function ManageReturnsModal({ isOpen, onClose }) {
         {thongBao && <div className="mx-6 mt-3 p-2 bg-green-100 text-green-700 text-xs rounded">{thongBao}</div>}
 
         <div className="p-6 overflow-y-auto flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main List */}
           <div className="lg:col-span-2 overflow-x-auto">
             {loading ? (
               <div className="text-center py-10 text-gray-500">Đang tải danh sách...</div>
@@ -138,7 +136,6 @@ function ManageReturnsModal({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* Right Action/Detail Panel */}
           <div className="bg-gray-50 p-4 rounded-xl border flex flex-col">
             <h4 className="font-bold text-sm text-gray-800 border-b pb-2 mb-3">Chi tiết xử lý yêu cầu</h4>
 
@@ -156,7 +153,6 @@ function ManageReturnsModal({ isOpen, onClose }) {
                     <p className="bg-white p-2 border rounded mt-1 text-gray-700 italic">{selectedReq.reason}</p>
                   </div>
 
-                  {/* Images preview */}
                   <div>
                     <span className="text-gray-500 block mb-1">Ảnh bằng chứng ({selectedReq.images?.length || 0}):</span>
                     <div className="flex gap-2 flex-wrap">
@@ -172,7 +168,6 @@ function ManageReturnsModal({ isOpen, onClose }) {
                     </div>
                   </div>
 
-                  {/* Status Selection */}
                   <div>
                     <label className="block font-semibold text-gray-700 mb-1">Cập nhật trạng thái (*):</label>
                     <select
@@ -189,7 +184,6 @@ function ManageReturnsModal({ isOpen, onClose }) {
                     </select>
                   </div>
 
-                  {/* Admin note */}
                   <div>
                     <label className="block font-semibold text-gray-700 mb-1">Ghi chú cho khách hàng (Admin Note):</label>
                     <textarea

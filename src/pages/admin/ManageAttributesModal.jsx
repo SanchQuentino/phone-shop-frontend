@@ -3,7 +3,7 @@ import api from '../../services/api'
 
 function ManageAttributesModal({ isOpen, onClose, onRefresh }) {
   const [data, setData] = useState({ categories: [], brands: [], colors: [], storages: [] })
-  const [activeTab, setActiveTab] = useState('colors') // 'colors' | 'storages' | 'brands' | 'categories'
+  const [activeTab, setActiveTab] = useState('colors')
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -72,13 +72,11 @@ function ManageAttributesModal({ isOpen, onClose, onRefresh }) {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
         
-        {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b bg-gray-50">
           <h3 className="text-lg font-bold text-gray-800">⚙️ Quản lý Thuộc tính Sản phẩm</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b text-sm font-medium bg-gray-100">
           <button
             onClick={() => { setActiveTab('colors'); setMessage(''); }}
@@ -106,7 +104,6 @@ function ManageAttributesModal({ isOpen, onClose, onRefresh }) {
           </button>
         </div>
 
-        {/* Form Thêm */}
         <div className="p-6 border-b bg-gray-50/50">
           <form onSubmit={handleAdd} className="flex gap-2">
             <input
@@ -133,7 +130,6 @@ function ManageAttributesModal({ isOpen, onClose, onRefresh }) {
           {message && <p className="text-xs mt-2 font-medium">{message}</p>}
         </div>
 
-        {/* Danh sách hiển thị */}
         <div className="p-6 overflow-y-auto flex-1">
           <div className="flex flex-wrap gap-2">
             {activeTab === 'colors' && data.colors.map(item => (
@@ -159,7 +155,6 @@ function ManageAttributesModal({ isOpen, onClose, onRefresh }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t bg-gray-50 text-right">
           <button onClick={onClose} className="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium text-sm">
             Đóng

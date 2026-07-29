@@ -32,7 +32,6 @@ function Home() {
 
 return (
   <div>
-    {/* Hero Banner */}
     <div
       className="relative text-white py-16 md:py-24 px-8 text-center"
       style={{

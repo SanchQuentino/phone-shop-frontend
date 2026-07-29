@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 
-// Helper định dạng tiền Việt Nam (20.000.000)
 const formatMoneyInput = (value) => {
   if (!value && value !== 0) return ''
   const cleanNumber = String(value).replace(/\D/g, '')
@@ -119,7 +118,6 @@ function AddProduct() {
       {loi && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{loi}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Thông tin chung */}
         <div className="bg-white p-6 rounded-xl shadow space-y-4">
           <h3 className="text-lg font-semibold border-b pb-2">1. Thông tin chung</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -174,7 +172,6 @@ function AddProduct() {
           </div>
         </div>
 
-        {/* Thông số kỹ thuật */}
         <div className="bg-white p-6 rounded-xl shadow space-y-4">
           <h3 className="text-lg font-semibold border-b pb-2">2. Thông số kỹ thuật</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -188,7 +185,6 @@ function AddProduct() {
           </div>
         </div>
 
-        {/* Biến thể sản phẩm */}
         <div className="bg-white p-6 rounded-xl shadow space-y-4">
           <div className="flex justify-between items-center border-b pb-2">
             <h3 className="text-lg font-semibold">3. Biến thể sản phẩm</h3>
@@ -209,7 +205,6 @@ function AddProduct() {
                 {attributes.storages.map(s => <option key={s.storage_id} value={s.storage_id}>{s.storage_name}</option>)}
               </select>
 
-              {/* Nhập giá hiển thị dạng 20.000.000 */}
               <input
                 type="text"
                 placeholder="Giá gốc"
@@ -244,7 +239,6 @@ function AddProduct() {
           ))}
         </div>
 
-        {/* Upload Ảnh */}
         <div className="bg-white p-6 rounded-xl shadow space-y-4">
           <h3 className="text-lg font-semibold border-b pb-2">4. Ảnh sản phẩm (Cloudinary)</h3>
           <div>

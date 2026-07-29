@@ -48,7 +48,7 @@ function ManageOrdersModal({ isOpen, onClose }) {
 
   const handleConfirmPayment = async (orderId) => {
     const code = window.prompt(`Nhập mã giao dịch chuyển khoản cho đơn #${orderId} (nếu có):`)
-    if (code === null) return // Khách hủy prompt
+    if (code === null) return 
 
     try {
       const res = await api.put(`/api/orders/admin/confirm-payment/${orderId}`, {
@@ -74,7 +74,6 @@ function ManageOrdersModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-6xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Header Modal */}
         <div className="p-5 border-b flex justify-between items-center bg-gray-50">
           <div>
             <h3 className="text-xl font-bold text-gray-800">Quản lý Đơn hàng Hệ thống</h3>
@@ -83,7 +82,6 @@ function ManageOrdersModal({ isOpen, onClose }) {
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl font-bold">×</button>
         </div>
 
-        {/* Status Filter Bar */}
         <div className="p-4 bg-gray-100 border-b flex gap-2 flex-wrap items-center text-xs font-semibold">
           <span className="text-gray-600 mr-2">Lọc trạng thái:</span>
           {['Tất cả', 'Chờ xác nhận', 'Đã xác nhận', 'Đang giao', 'Đã giao', 'Đã hủy'].map(st => (
@@ -101,11 +99,9 @@ function ManageOrdersModal({ isOpen, onClose }) {
           ))}
         </div>
 
-        {/* Alert Messages */}
         {loi && <div className="mx-6 mt-3 p-2 bg-red-100 text-red-700 text-xs rounded">{loi}</div>}
         {thongBao && <div className="mx-6 mt-3 p-2 bg-green-100 text-green-700 text-xs rounded">{thongBao}</div>}
 
-        {/* Body Table */}
         <div className="p-6 overflow-y-auto flex-1">
           {loading ? (
             <div className="text-center py-12 text-gray-500">Đang tải danh sách đơn hàng...</div>
@@ -171,7 +167,7 @@ function ManageOrdersModal({ isOpen, onClose }) {
                             className="bg-emerald-600 text-white px-2.5 py-1 rounded hover:bg-emerald-700 text-[11px] shadow-sm"
                             title="Xác nhận khách đã chuyển tiền thành công"
                           >
-                            ✓ Tiền đã về
+                            Tiền đã về
                           </button>
                         )}
                       </td>

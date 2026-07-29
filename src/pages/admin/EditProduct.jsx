@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 
-// Helper xử lý chuẩn giá tiền từ DB ("3899000.00") hoặc từ Input ("3.899.000")
 const cleanPriceNumber = (value) => {
   if (value === null || value === undefined || value === '') return ''
   const num = typeof value === 'number' ? value : Number(value)
@@ -72,7 +71,6 @@ function EditProduct() {
             operating_system: data.operating_system || ''
           })
           
-          // Làm sạch giá tiền ban đầu lấy từ DB về
           const cleanedVariants = (data.variants || []).map(v => ({
             ...v,
             original_price: unformatMoneyInput(v.original_price),
@@ -133,7 +131,7 @@ function EditProduct() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">✏️ Chỉnh sửa sản phẩm #{id}</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800"> Chỉnh sửa sản phẩm #{id}</h2>
       {loi && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{loi}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
