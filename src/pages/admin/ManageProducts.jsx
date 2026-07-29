@@ -10,6 +10,7 @@ function ManageProducts() {
   const [loading, setLoading] = useState(true)
   const [loi, setLoi] = useState('')
   const [thongBao, setThongBao] = useState('')
+  
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 18
 

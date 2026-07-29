@@ -18,7 +18,6 @@ function Cart() {
   const [isMember, setIsMember] = useState(false)
   const navigate = useNavigate()
 
-  // Form Thông tin người nhận & Giao hàng
   const [formData, setFormData] = useState({
       receiver_name: '',
       receiver_phone: '',
@@ -32,10 +31,8 @@ function Cart() {
   })
 
   useEffect(() => {
-    // 1. Lấy dữ liệu Giỏ hàng
     const fetchCart = api.get('/api/cart/member')
     
-    // 2. Lấy thông tin thanh toán tự động (Autofill)
     const fetchCheckoutInfo = api.get('/api/order/checkout-info')
 
     Promise.all([fetchCart, fetchCheckoutInfo])
@@ -110,12 +107,10 @@ function Cart() {
       return
     }
 
-    // Ghép địa chỉ đầy đủ từ các ô nhập
     const fullAddress = formData.shipping_method === 'Nhận tại cửa hàng' 
       ? 'Nhận trực tiếp tại Cửa hàng'
       : [formData.address_detail, formData.ward, formData.province].filter(Boolean).join(', ')
 
-    // Tạo mảng items theo đúng cấu trúc backend OrderController yêu cầu
     const items = gioHang.map(item => ({
       variant_id: item.variant_id,
       price: Number(item.sale_price),
@@ -143,7 +138,6 @@ function Cart() {
         const { orderId, paymentMethod, qrCodeUrl } = res.data
 
         if (paymentMethod === 'Chuyển khoản QR') {
-          // Chuyển hướng sang trang Thanh toán QR kèm theo dữ liệu
           navigate(`/payment/${orderId}`, {
             state: {
               orderId,
@@ -193,13 +187,12 @@ function Cart() {
       ) : (
         <form onSubmit={xuLyDatHang} className="flex flex-col lg:flex-row gap-6">
 
-          {/* CỘT TRÁI: Danh sách sản phẩm & Thông tin nhận hàng */}
           <div className="flex-1 flex flex-col gap-6">
 
             {/* Block 1: Danh sách sản phẩm */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
               <h3 className="font-bold text-gray-800 text-base md:text-lg mb-4 flex items-center gap-2">
-                <span>📦</span> Sản phẩm đã chọn ({gioHang.length})
+                <span></span> Sản phẩm đã chọn ({gioHang.length})
               </h3>
               <div className="flex flex-col gap-4">
                 {gioHang.map(item => (
@@ -236,10 +229,9 @@ function Cart() {
               </div>
             </div>
 
-            {/* Block 2: Thông tin người nhận & Địa chỉ */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
               <h3 className="font-bold text-gray-800 text-base md:text-lg mb-4 flex items-center gap-2">
-                <span>📍</span> Thông tin giao hàng
+                <span></span> Thông tin giao hàng
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -281,7 +273,6 @@ function Cart() {
                   />
                 </div>
 
-                {/* Phương thức nhận hàng */}
                 <div className="md:col-span-2 mt-2">
                   <label className="block text-xs font-semibold text-gray-600 mb-2">Hình thức nhận hàng</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -311,7 +302,6 @@ function Cart() {
                   </div>
                 </div>
 
-                {/* Các ô địa chỉ chi tiết (Chỉ hiện khi Giao tận nơi) */}
                 {formData.shipping_method === 'Giao hàng tận nơi' && (
                   <>
                     <div className="md:col-span-2">
@@ -356,10 +346,9 @@ function Cart() {
               </div>
             </div>
 
-            {/* Block 3: Phương thức thanh toán */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-5">
               <h3 className="font-bold text-gray-800 text-base md:text-lg mb-4 flex items-center gap-2">
-                <span>💳</span> Phương thức thanh toán
+                <span></span> Phương thức thanh toán
               </h3>
 
               <div className="flex flex-col gap-3">
@@ -374,7 +363,7 @@ function Cart() {
                   />
                   <div>
                     <p className="font-semibold text-gray-800 text-sm flex items-center gap-2">
-                      <span>📲</span> Chuyển khoản Online qua Mã QR (VietQR)
+                      <span></span> Chuyển khoản Online qua Mã QR (VietQR)
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">
                       Tự động tạo mã QR VietQR chuẩn ngân hàng MB. Khuyên dùng để xử lý đơn hàng nhanh hơn.
@@ -405,7 +394,6 @@ function Cart() {
 
           </div>
 
-          {/* CỘT PHẢI: Tóm tắt đơn hàng & Nút đặt hàng */}
           <div className="w-full lg:w-96 h-fit bg-white rounded-xl shadow-sm border border-gray-100 p-5 lg:sticky lg:top-4">
             <h3 className="font-bold text-gray-800 text-lg mb-4 pb-3 border-b">Tóm tắt đơn hàng</h3>
 
