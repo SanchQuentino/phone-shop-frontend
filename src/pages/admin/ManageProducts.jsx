@@ -11,6 +11,10 @@ function ManageProducts() {
   const [loi, setLoi] = useState('')
   const [thongBao, setThongBao] = useState('')
 
+  // State Phân trang
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 18
+
   // Modals state
   const [isAttributeModalOpen, setIsAttributeModalOpen] = useState(false)
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false)
@@ -18,10 +22,20 @@ function ManageProducts() {
 
   const navigate = useNavigate()
 
+  // Hàm xử lý hiển thị ảnh giống Home.jsx
+  const getImageUrl = (path) => {
+    if (!path) return ''
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path
+    }
+    const cleanPath = path.replace(/^\/?image\//, '')
+    return `https://web-ban-dien-thoai-production.up.railway.app/image/${cleanPath}`
+  }
+
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      const res = await api.get('/api/products?limit=100')
+      const res = await api.get('/api/products?limit=1000')
       const listData = Array.isArray(res.data) ? res.data : (res.data.data || [])
       setSanPham(listData)
     } catch (err) {
@@ -45,6 +59,18 @@ function ManageProducts() {
       }
     } catch (err) {
       setLoi(err.response?.data?.message || 'Không thể xoá sản phẩm!')
+    }
+  }
+
+  const totalPages = Math.ceil(sanPham.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentProducts = sanPham.slice(indexOfFirstItem, indexOfLastItem)
+
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
