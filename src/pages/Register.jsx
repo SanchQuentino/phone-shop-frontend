@@ -9,18 +9,22 @@ function Register(){
         setForm({...form, [e.target.name]:e.target.value})
     }
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        setLoi('')
-        setThongBao('')
-        try {
-            const res = await api.post('api/auth/register',form)
-            if (res.data.success){
-                setThongBao(res.data.message)
-            }
-        } catch (err) {
-            setLoi(err.response?.data?.message || 'Lỗi kết nối server!')
+            e.preventDefault()
+            setLoi('')
+            setThongBao('')
+            if (!form.password || form.password.length < 10) {
+            setLoi('Mật khẩu phải chứa ít nhất 10 ký tự!');
+            return;
         }
-    }
+            try {
+                const res = await api.post('/api/auth/register', form)
+                if (res.data.success){
+                    setThongBao(res.data.message)
+                }
+            } catch (err) {
+                setLoi(err.response?.data?.message || 'Lỗi kết nối server!')
+            }
+        }
     return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">

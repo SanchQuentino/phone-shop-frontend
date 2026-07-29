@@ -10,6 +10,7 @@ import Navbar from './components/Navbar'
 import NotFound from './pages/NotFound'
 import SearchResults from './pages/SearchResults'
 import AddProduct from './pages/admin/AddProduct'
+import EditProduct from './pages/admin/EditProduct'
 import Payment from './pages/Payment'
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/admin" element={<ManageProducts />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/admin/products/add" element={<AddProduct />} />
+        <Route path="/admin/products/edit/:id" element={<EditProduct />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/payment/:orderId" element={<Payment />} />
       </Routes>

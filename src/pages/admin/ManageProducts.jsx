@@ -1,85 +1,159 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
+import ManageAttributesModal from './ManageAttributesModal'
+import ManageOrdersModal from './ManageOrdersModal'
+import ManageReturnsModal from './ManageReturnsModal'
 
 function ManageProducts() {
   const [sanPham, setSanPham] = useState([])
+  const [loading, setLoading] = useState(true)
   const [loi, setLoi] = useState('')
+  const [thongBao, setThongBao] = useState('')
+
+  // Modals state
+  const [isAttributeModalOpen, setIsAttributeModalOpen] = useState(false)
+  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false)
+  const [isReturnsModalOpen, setIsReturnsModalOpen] = useState(false)
+
   const navigate = useNavigate()
 
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const res = await api.get('/api/products?limit=100')
+      const listData = Array.isArray(res.data) ? res.data : (res.data.data || [])
+      setSanPham(listData)
+    } catch (err) {
+      setLoi('Không thể tải danh sách sản phẩm!')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    api.get('/api/products')
-      .then(res => setSanPham(res.data.data))
-      .catch(err => {
-        if (err.response?.status === 403) {
-          navigate('/') 
-        } else {
-          setLoi('Không thể tải sản phẩm!')
-        }
-      })
+    fetchProducts()
   }, [])
 
   const xoaSanPham = async (id) => {
-    if (!window.confirm('Xác nhận xoá sản phẩm này?')) return
+    if (!window.confirm('Xác nhận xoá (ẩn) sản phẩm này?')) return
     try {
-      await api.delete(`/api/admin/products/${id}`)
-      setSanPham(sanPham.filter(sp => sp.product_id !== id))
+      const res = await api.delete(`/api/admin/products/${id}`)
+      if (res.data?.success) {
+        setThongBao(res.data.message || 'Xóa sản phẩm thành công!')
+        setSanPham(prev => prev.filter(sp => sp.product_id !== id))
+      }
     } catch (err) {
-      setLoi('Không thể xoá sản phẩm!')
+      setLoi(err.response?.data?.message || 'Không thể xoá sản phẩm!')
     }
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">🛠️ Quản lý sản phẩm</h2>
-        <button
-          onClick={() => navigate('/admin/products/add')}
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition font-semibold"
-        >
-          + Thêm sản phẩm
-        </button>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header Toolbar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800"> Bảng Quản Trị Hệ Thống</h2>
+          <p className="text-sm text-gray-500 mt-1">Quản lý sản phẩm, thuộc tính, đơn hàng và các yêu cầu bảo hành</p>
+        </div>
+        
+        {/* Nút chức năng nằm ngang cạnh nút Thuộc tính */}
+        <div className="flex flex-wrap gap-2.5">
+          <button
+            onClick={() => setIsOrdersModalOpen(true)}
+            className="bg-blue-600 text-white px-3.5 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-xs shadow flex items-center gap-1.5"
+          >
+             Đơn hàng
+          </button>
+
+          <button
+            onClick={() => setIsReturnsModalOpen(true)}
+            className="bg-indigo-600 text-white px-3.5 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-xs shadow flex items-center gap-1.5"
+          >
+            Đổi trả & Bảo hành
+          </button>
+
+          <button
+            onClick={() => setIsAttributeModalOpen(true)}
+            className="bg-gray-800 text-white px-3.5 py-2 rounded-lg hover:bg-gray-900 transition font-medium text-xs shadow flex items-center gap-1.5"
+          >
+             Thuộc tính
+          </button>
+
+          <button
+            onClick={() => navigate('/admin/products/add')}
+            className="bg-orange-500 text-white px-3.5 py-2 rounded-lg hover:bg-orange-600 transition font-bold text-xs shadow flex items-center gap-1"
+          >
+            + Thêm sản phẩm
+          </button>
+        </div>
       </div>
 
-      {loi && <p className="text-red-500 mb-4">{loi}</p>}
+      {loi && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{loi}</div>}
+      {thongBao && <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4 text-sm">{thongBao}</div>}
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-orange-500 text-white">
-            <tr>
-              <th className="px-4 py-3 text-left">ID</th>
-              <th className="px-4 py-3 text-left">Tên sản phẩm</th>
-              <th className="px-4 py-3 text-left">Giá bán</th>
-              <th className="px-4 py-3 text-center">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sanPham.map((sp, index) => (
-              <tr key={sp.product_id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                <td className="px-4 py-3 text-gray-600">{sp.product_id}</td>
-                <td className="px-4 py-3 font-medium text-gray-800">{sp.product_name}</td>
-                <td className="px-4 py-3 text-orange-500 font-semibold">
-                  {Number(sp.min_sale_price).toLocaleString('vi-VN')} đ
-                </td>
-                <td className="px-4 py-3 text-center flex gap-2 justify-center">
-                  <button
-                    onClick={() => navigate(`/admin/products/edit/${sp.product_id}`)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 transition text-sm"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => xoaSanPham(sp.product_id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition text-sm"
-                  >
-                    Xóa
-                  </button>
-                </td>
+      {/* Product Table */}
+      {loading ? (
+        <div className="text-center py-10 text-gray-500">Đang tải dữ liệu sản phẩm...</div>
+      ) : (
+        <div className="bg-white rounded-xl shadow overflow-hidden border">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-100 border-b border-gray-200 text-gray-700 text-sm">
+              <tr>
+                <th className="px-4 py-3">ID</th>
+                <th className="px-4 py-3">Hình ảnh</th>
+                <th className="px-4 py-3">Tên sản phẩm</th>
+                <th className="px-4 py-3">Giá thấp nhất</th>
+                <th className="px-4 py-3 text-center">Hành động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-gray-200 text-sm">
+              {sanPham.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-8 text-gray-500">Chưa có sản phẩm nào.</td>
+                </tr>
+              ) : (
+                sanPham.map((sp, index) => (
+                  <tr key={sp.product_id} className={index % 2 === 0 ? 'bg-gray-50/50' : 'bg-white'}>
+                    <td className="px-4 py-3 font-medium text-gray-600">#{sp.product_id}</td>
+                    <td className="px-4 py-3">
+                      {sp.main_image ? (
+                        <img src={sp.main_image} alt={sp.product_name} className="w-12 h-12 object-cover rounded border" />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">Không ảnh</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-gray-800">{sp.product_name}</td>
+                    <td className="px-4 py-3 text-orange-600 font-semibold">
+                      {Number(sp.min_sale_price || 0).toLocaleString('vi-VN')} đ
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex gap-2 justify-center">
+                        <button onClick={() => navigate(`/admin/products/edit/${sp.product_id}`)} className="bg-blue-500 text-white px-3 py-1.5 rounded text-xs hover:bg-blue-600">Sửa</button>
+                        <button onClick={() => xoaSanPham(sp.product_id)} className="bg-red-500 text-white px-3 py-1.5 rounded text-xs hover:bg-red-600">Xóa</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <ManageAttributesModal
+        isOpen={isAttributeModalOpen}
+        onClose={() => setIsAttributeModalOpen(false)}
+      />
+
+      <ManageOrdersModal
+        isOpen={isOrdersModalOpen}
+        onClose={() => setIsOrdersModalOpen(false)}
+      />
+
+      <ManageReturnsModal
+        isOpen={isReturnsModalOpen}
+        onClose={() => setIsReturnsModalOpen(false)}
+      />
     </div>
   )
 }

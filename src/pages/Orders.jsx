@@ -11,7 +11,6 @@ function Orders() {
 useEffect(() => {
   api.get('/api/order/my-orders')
     .then(res => {
-      // 🎯 IN DỮ LIỆU BẮT ĐƯỢC RA CONSOLE BÌNH THƯỜNG
       console.log('>>> Dữ liệu API trả về:', res.data);
       
       if (res.data && Array.isArray(res.data.data)) {

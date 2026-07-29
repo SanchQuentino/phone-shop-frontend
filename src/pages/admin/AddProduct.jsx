@@ -1,138 +1,269 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
 
+// Helper định dạng tiền Việt Nam (20.000.000)
+const formatMoneyInput = (value) => {
+  if (!value && value !== 0) return ''
+  const cleanNumber = String(value).replace(/\D/g, '')
+  if (!cleanNumber) return ''
+  return new Intl.NumberFormat('vi-VN').format(cleanNumber)
+}
+
+const unformatMoneyInput = (value) => {
+  if (!value) return ''
+  return String(value).replace(/\D/g, '')
+}
+
 function AddProduct() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({
-    product_name: '',
-    description: '',
-    screen: '',
-    chip: '',
-    ram: '',
-    rear_camera: '',
-    front_camera: '',
-    battery: '',
-    operating_system: '',
-    brand_id: '',
-    category_id: '',
-  })
-  const [thongBao, setThongBao] = useState('')
+  const [attributes, setAttributes] = useState({ categories: [], brands: [], colors: [], storages: [] })
+  const [loading, setLoading] = useState(false)
   const [loi, setLoi] = useState('')
-  const [dangLuu, setDangLuu] = useState(false)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const [formData, setFormData] = useState({
+    category_id: '',
+    brand_id: '',
+    product_name: '',
+    description: ''
+  })
+
+  const [specs, setSpecs] = useState({
+    screen: '', chip: '', ram: '', rear_camera: '', front_camera: '', battery: '', operating_system: ''
+  })
+
+  const [variants, setVariants] = useState([
+    { color_id: '', storage_id: '', original_price: '', sale_price: '', stock: '' }
+  ])
+
+  const [mainImage, setMainImage] = useState(null)
+  const [galleryImages, setGalleryImages] = useState([])
+
+  const fetchAttributes = async () => {
+    try {
+      const res = await api.get('/api/admin/attributes/all')
+      if (res.data?.success) {
+        setAttributes(res.data.data)
+      }
+    } catch (err) {
+      console.error('Lỗi tải thuộc tính:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchAttributes()
+  }, [])
+
+  const handleAddVariant = () => {
+    setVariants([...variants, { color_id: '', storage_id: '', original_price: '', sale_price: '', stock: '' }])
+  }
+
+  const handleRemoveVariant = (index) => {
+    setVariants(variants.filter((_, i) => i !== index))
+  }
+
+  const handleVariantChange = (index, field, value) => {
+    const updated = [...variants]
+    if (field === 'original_price' || field === 'sale_price') {
+      updated[index][field] = unformatMoneyInput(value)
+    } else {
+      updated[index][field] = value
+    }
+    setVariants(updated)
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoi('')
-    setThongBao('')
-    setDangLuu(true)
+
+    if (!mainImage) {
+      setLoi('Vui lòng chọn ảnh chính sản phẩm!')
+      return
+    }
+
     try {
-      const res = await api.post('/api/admin/products/create', form)
-      if (res.data.success) {
-        setThongBao('Thêm sản phẩm thành công!')
-        setTimeout(() => navigate('/admin'), 1500)
+      setLoading(true)
+      const sendData = new FormData()
+
+      sendData.append('category_id', formData.category_id)
+      sendData.append('brand_id', formData.brand_id)
+      sendData.append('product_name', formData.product_name)
+      sendData.append('description', formData.description)
+
+      sendData.append('specs', JSON.stringify(specs))
+      sendData.append('variants', JSON.stringify(variants))
+
+      sendData.append('main_image', mainImage)
+      Array.from(galleryImages).forEach(file => {
+        sendData.append('gallery_images', file)
+      })
+
+      const res = await api.post('/api/admin/products/create', sendData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      if (res.data?.success) {
+        alert(res.data.message || 'Thêm sản phẩm thành công!')
+        navigate('/admin')
       }
     } catch (err) {
-      if (err.response?.status === 403) {
-        setLoi('Bạn không có quyền thực hiện thao tác này!')
-      } else {
-        setLoi(err.response?.data?.message || 'Không thể thêm sản phẩm!')
-      }
+      setLoi(err.response?.data?.message || 'Có lỗi xảy ra khi thêm sản phẩm!')
     } finally {
-      setDangLuu(false)
+      setLoading(false)
     }
   }
 
-  const fields = [
-    { name: 'product_name', label: 'Tên sản phẩm', required: true },
-    { name: 'brand_id', label: 'Brand ID', required: true },
-    { name: 'category_id', label: 'Category ID', required: true },
-    { name: 'screen', label: 'Màn hình' },
-    { name: 'chip', label: 'Chip' },
-    { name: 'ram', label: 'RAM' },
-    { name: 'rear_camera', label: 'Camera sau' },
-    { name: 'front_camera', label: 'Camera trước' },
-    { name: 'battery', label: 'Pin' },
-    { name: 'operating_system', label: 'Hệ điều hành' },
-  ]
-
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate('/admin')}
-          className="text-gray-500 hover:text-gray-700 transition"
-        >
-          ← Quay lại
-        </button>
-        <h2 className="text-2xl font-bold text-gray-800">➕ Thêm sản phẩm mới</h2>
-      </div>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">➕ Thêm sản phẩm mới</h2>
+      {loi && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{loi}</div>}
 
-      {thongBao && (
-        <div className="bg-green-50 border border-green-300 text-green-700 px-4 py-3 rounded-lg mb-4">
-          ✅ {thongBao}
-        </div>
-      )}
-      {loi && (
-        <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg mb-4">
-          ❌ {loi}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-6 flex flex-col gap-4">
-        
-        {/* Các field thông tin */}
-        {fields.map(field => (
-          <div key={field.name}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {field.label} {field.required && <span className="text-red-500">*</span>}
-            </label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Thông tin chung */}
+        <div className="bg-white p-6 rounded-xl shadow space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">1. Thông tin chung</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Danh mục (*)</label>
+              <select
+                required
+                className="w-full border p-2 rounded text-sm"
+                value={formData.category_id}
+                onChange={e => setFormData({ ...formData, category_id: e.target.value })}
+              >
+                <option value="">-- Chọn danh mục --</option>
+                {attributes.categories.map(c => (
+                  <option key={c.category_id} value={c.category_id}>{c.category_name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Thương hiệu (*)</label>
+              <select
+                required
+                className="w-full border p-2 rounded text-sm"
+                value={formData.brand_id}
+                onChange={e => setFormData({ ...formData, brand_id: e.target.value })}
+              >
+                <option value="">-- Chọn thương hiệu --</option>
+                {attributes.brands.map(b => (
+                  <option key={b.brand_id} value={b.brand_id}>{b.brand_name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tên sản phẩm (*)</label>
             <input
               type="text"
-              name={field.name}
-              value={form[field.name]}
-              onChange={handleChange}
-              required={field.required}
-              placeholder={`Nhập ${field.label.toLowerCase()}...`}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500 text-sm"
+              required
+              className="w-full border p-2 rounded text-sm"
+              placeholder="VD: iPhone 15 Pro Max"
+              value={formData.product_name}
+              onChange={e => setFormData({ ...formData, product_name: e.target.value })}
             />
           </div>
-        ))}
-
-        {/* Mô tả */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={4}
-            placeholder="Nhập mô tả sản phẩm..."
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-orange-500 text-sm resize-none"
-          />
+          <div>
+            <label className="block text-sm font-medium mb-1">Mô tả sản phẩm</label>
+            <textarea
+              rows="3"
+              className="w-full border p-2 rounded text-sm"
+              value={formData.description}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
+            ></textarea>
+          </div>
         </div>
 
-        {/* Nút */}
-        <div className="flex gap-3 mt-2">
-          <button
-            type="button"
-            onClick={() => navigate('/admin')}
-            className="flex-1 border border-gray-300 text-gray-600 py-2.5 rounded-lg hover:bg-gray-50 transition font-semibold"
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            disabled={dangLuu}
-            className="flex-1 bg-orange-500 text-white py-2.5 rounded-lg hover:bg-orange-600 transition font-semibold disabled:opacity-50"
-          >
-            {dangLuu ? 'Đang lưu...' : 'Thêm sản phẩm'}
-          </button>
+        {/* Thông số kỹ thuật */}
+        <div className="bg-white p-6 rounded-xl shadow space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">2. Thông số kỹ thuật</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <input type="text" placeholder="Màn hình" className="border p-2 rounded text-sm" value={specs.screen} onChange={e => setSpecs({...specs, screen: e.target.value})} />
+            <input type="text" placeholder="Chip / CPU" className="border p-2 rounded text-sm" value={specs.chip} onChange={e => setSpecs({...specs, chip: e.target.value})} />
+            <input type="text" placeholder="RAM" className="border p-2 rounded text-sm" value={specs.ram} onChange={e => setSpecs({...specs, ram: e.target.value})} />
+            <input type="text" placeholder="Pin" className="border p-2 rounded text-sm" value={specs.battery} onChange={e => setSpecs({...specs, battery: e.target.value})} />
+            <input type="text" placeholder="Camera sau" className="border p-2 rounded text-sm" value={specs.rear_camera} onChange={e => setSpecs({...specs, rear_camera: e.target.value})} />
+            <input type="text" placeholder="Camera trước" className="border p-2 rounded text-sm" value={specs.front_camera} onChange={e => setSpecs({...specs, front_camera: e.target.value})} />
+            <input type="text" placeholder="Hệ điều hành" className="border p-2 rounded text-sm col-span-2" value={specs.operating_system} onChange={e => setSpecs({...specs, operating_system: e.target.value})} />
+          </div>
         </div>
+
+        {/* Biến thể sản phẩm */}
+        <div className="bg-white p-6 rounded-xl shadow space-y-4">
+          <div className="flex justify-between items-center border-b pb-2">
+            <h3 className="text-lg font-semibold">3. Biến thể sản phẩm</h3>
+            <button type="button" onClick={handleAddVariant} className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded font-medium">
+              + Thêm dòng biến thể
+            </button>
+          </div>
+
+          {variants.map((v, idx) => (
+            <div key={idx} className="grid grid-cols-6 gap-2 items-center bg-gray-50 p-3 rounded">
+              <select required className="border p-1.5 rounded text-xs" value={v.color_id} onChange={e => handleVariantChange(idx, 'color_id', e.target.value)}>
+                <option value="">-- Màu sắc --</option>
+                {attributes.colors.map(c => <option key={c.color_id} value={c.color_id}>{c.color_name}</option>)}
+              </select>
+
+              <select required className="border p-1.5 rounded text-xs" value={v.storage_id} onChange={e => handleVariantChange(idx, 'storage_id', e.target.value)}>
+                <option value="">-- Dung lượng --</option>
+                {attributes.storages.map(s => <option key={s.storage_id} value={s.storage_id}>{s.storage_name}</option>)}
+              </select>
+
+              {/* Nhập giá hiển thị dạng 20.000.000 */}
+              <input
+                type="text"
+                placeholder="Giá gốc"
+                required
+                className="border p-1.5 rounded text-xs"
+                value={formatMoneyInput(v.original_price)}
+                onChange={e => handleVariantChange(idx, 'original_price', e.target.value)}
+              />
+
+              <input
+                type="text"
+                placeholder="Giá bán"
+                required
+                className="border p-1.5 rounded text-xs"
+                value={formatMoneyInput(v.sale_price)}
+                onChange={e => handleVariantChange(idx, 'sale_price', e.target.value)}
+              />
+
+              <input
+                type="number"
+                placeholder="Kho"
+                required
+                className="border p-1.5 rounded text-xs"
+                value={v.stock}
+                onChange={e => handleVariantChange(idx, 'stock', e.target.value)}
+              />
+
+              {variants.length > 1 && (
+                <button type="button" onClick={() => handleRemoveVariant(idx)} className="text-red-500 text-xs font-bold">Xóa</button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Upload Ảnh */}
+        <div className="bg-white p-6 rounded-xl shadow space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">4. Ảnh sản phẩm (Cloudinary)</h3>
+          <div>
+            <label className="block text-sm font-medium mb-1">Ảnh chính (*)</label>
+            <input type="file" accept="image/*" required onChange={e => setMainImage(e.target.files[0])} className="w-full border p-2 rounded text-sm" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Bộ ảnh phụ</label>
+            <input type="file" accept="image/*" multiple onChange={e => setGalleryImages(e.target.files)} className="w-full border p-2 rounded text-sm" />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition"
+        >
+          {loading ? 'Đang tải ảnh & Lưu...' : 'Thêm sản phẩm'}
+        </button>
       </form>
     </div>
   )
